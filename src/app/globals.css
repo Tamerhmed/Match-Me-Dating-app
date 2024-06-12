@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.data-\[active\=true\]\:text-yellow-200[data-active=true] {
+    color: #3a3a3b!important;
+}
