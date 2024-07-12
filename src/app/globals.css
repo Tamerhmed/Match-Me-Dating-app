@@ -5,3 +5,9 @@
 .data-\[active\=true\]\:text-yellow-200[data-active=true] {
     color: #3a3a3b!important;
 }
+
+@layer components {
+    .vertical-center {
+        height: calc(100vh - 64px);
+    }
+}
