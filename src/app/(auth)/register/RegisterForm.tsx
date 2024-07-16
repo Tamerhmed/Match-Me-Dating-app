@@ -1,33 +1,36 @@
 'use client';
-
-import { signInUser } from '@/app/actions/authActions';
-import { loginSchema, LoginSchema } from '@/lib/schemas/loginSchemas';
+import { registerUser } from '@/app/actions/authActions';
+import { registerSchema, RegisterSchema } from '@/lib/schemas/registerSchemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Card, CardBody, CardHeader, Input } from '@nextui-org/react';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { GiPadlock } from 'react-icons/gi';
-import { toast } from 'react-toastify';
 
-export default function LoginForm() {
-  const router = useRouter();
+export default function RegisterForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isValid, isSubmitting },
-  } = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<RegisterSchema>({
+    // resolver: zodResolver(registerSchema),
     mode: 'onTouched',
   });
-  const onSubmit = async (data: LoginSchema) => {
-    const result = await signInUser(data);
 
+  const onSubmit = async (data: RegisterSchema) => {
+    const result = await registerUser(data);
     if (result.status === 'success') {
-      router.push('/members');
-      router.refresh();
+      console.log('User registered successfully');
     } else {
-      toast.error(result.error as string);
+      if (Array.isArray(result.error)) {
+        result.error.forEach((e) => {
+          const fieldName = e.path.join('.') as 'email' | 'name' | 'password';
+          setError(fieldName, { message: e.message });
+        });
+      } else {
+        setError('root.serverError', { message: result.error });
+      }
     }
   };
   return (
@@ -36,16 +39,24 @@ export default function LoginForm() {
         <div className='flex flex-col gap-2 items-center text-secondary py-2'>
           <div className='flex flex-row items-center gap-3'>
             <GiPadlock size={30} className='text-tinder-400' />
-            <h2 className='text-3xl font-semibold text-tinder-400'>Login</h2>
+            <h2 className='text-3xl font-semibold text-tinder-400'>Register</h2>
           </div>
           <p className='text-neutral-500 py-2 font-medium text-medium'>
-            Welcome back to NextMatch
+            Welcome to NextMatch
           </p>
         </div>
       </CardHeader>
       <CardBody>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className='space-y-4'>
+            <Input
+              defaultValue=''
+              label='name'
+              variant='bordered'
+              {...register('name')}
+              isInvalid={!!errors.name}
+              errorMessage={errors.name?.message as string}
+            />
             <Input
               defaultValue=''
               label='Email'
@@ -63,6 +74,11 @@ export default function LoginForm() {
               isInvalid={!!errors.password}
               errorMessage={errors.password?.message as string}
             />
+            {errors.root?.serverError && (
+              <p className='text-danger text-sm'>
+                {errors.root.severError.message}
+              </p>
+            )}
             <Button
               isLoading={isSubmitting}
               isDisabled={!isValid}
@@ -70,7 +86,7 @@ export default function LoginForm() {
               className='bg-tinder-400 text-white'
               type='submit'
             >
-              Login
+              Register
             </Button>
           </div>
         </form>
