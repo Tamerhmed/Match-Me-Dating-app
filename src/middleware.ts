@@ -4,7 +4,7 @@ import { authRoutes, publicRoutes } from './routes';
 
 export default auth((req) => {
   const { nextUrl } = req;
-  const isLogged = !!req.auth;
+  const isLoggedIn = !!req.auth;
 
   const isPublic = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
@@ -14,13 +14,13 @@ export default auth((req) => {
   }
 
   if (isAuthRoute) {
-    if (isLogged) {
+    if (isLoggedIn) {
       return NextResponse.redirect(new URL('/members', nextUrl));
     }
     return NextResponse.next();
   }
 
-  if (!isPublic || !isLogged) {
+  if (!isPublic || !isLoggedIn) {
     return NextResponse.redirect(new URL('/login', nextUrl));
   }
 
